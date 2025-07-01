@@ -135,7 +135,32 @@ class Bomb(pg.sprite.Sprite):
         self.rect.move_ip(self.speed*self.vx, self.speed*self.vy)
         if check_bound(self.rect) != (True, True):
             self.kill()
-
+            
+class Shield(pg.sprite.Sprite):
+    """防御壁"""
+    def __init__(self, bird, life=400):
+        super().__init__()
+        # サイズ：幅20px × 高さ(こうかとん身長×2)
+        w, h = 20, bird.rect.height * 2
+        # 回転前の元画像を保持
+        self.orig_image = pg.Surface((w, h), pg.SRCALPHA)
+        pg.draw.rect(self.orig_image, (0, 0, 255), (0, 0, w, h))
+        # 向きに合わせて回転
+        vx, vy = bird.dire
+        deg = math.degrees(math.atan2(-vy, vx))
+        self.image = pg.transform.rotate(self.orig_image, deg)
+        self.rect = self.image.get_rect()
+        # こうかとん中心から一体分ずらした位置に配置
+        offset = bird.rect.height
+        self.rect.centerx = bird.rect.centerx + vx * offset
+        self.rect.centery = bird.rect.centery + vy * offset
+        # 発動時間（400フレーム）
+        self.life = life
+         
+        def update(self):
+            self.life -= 1
+        if self.life < 0:
+            self.kill()
 
 class Beam(pg.sprite.Sprite):
     """
