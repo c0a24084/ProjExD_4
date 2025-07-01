@@ -157,8 +157,8 @@ class Shield(pg.sprite.Sprite):
         # 発動時間（400フレーム）
         self.life = life
          
-        def update(self):
-            self.life -= 1
+    def update(self):
+        self.life -= 1
         if self.life < 0:
             self.kill()
 
@@ -268,10 +268,12 @@ class Score:
 
 
 def main():
+    pg.init()
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load(f"fig/pg_bg.jpg")
     score = Score()
+    shields = pg.sprite.Group()  # 防御壁のグループ
 
     bird = Bird(3, (900, 400))
     bombs = pg.sprite.Group()
@@ -288,7 +290,14 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+            if event.type == pg.KEYDOWN and event.key == pg.K_s:
+                if score.value > 50 and len(shields) == 0:
+                    score.value -= 50
+                    shields.add(Shield(bird, life=400))
+                    
         screen.blit(bg_img, [0, 0])
+        
+        shields.update()
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
             emys.add(Enemy())
@@ -321,9 +330,15 @@ def main():
         emys.draw(screen)
         bombs.update()
         bombs.draw(screen)
+        shields.draw(screen) 
+        # 防御壁の更新と描画
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        hits = pg.sprite.groupcollide(bombs, shields, True, False)
+        hits = pg.sprite.groupcollide(bombs, shields, True, False)
+        for bomb, hit_ls in hits.items():
+             exps.add(Explosion(bomb, 30))
         pg.display.update()
         tmr += 1
         clock.tick(50)
