@@ -104,11 +104,12 @@ class Bird(pg.sprite.Sprite):
         if key_lst[pg.K_RSHIFT] and score.value > 100:
             self.state = "hyper"
             self.hyper_life = 500
+            score.value -= 100
         if self.hyper_life > 0:
             self.image = pg.transform.laplacian(self.image)
             self.hyper_life -= 1
-            if self.hyper_life == 0:
-                self.state = "normal"
+        if self.hyper_life == 0:
+            self.state = "normal"
         screen.blit(self.image, self.rect)
 
 
@@ -292,7 +293,7 @@ class Score:
     def __init__(self):
         self.font = pg.font.Font(None, 50)
         self.color = (0, 0, 255)
-        self.value = 0
+        self.value = 10000
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         self.rect = self.image.get_rect()
         self.rect.center = 100, HEIGHT-50
@@ -449,6 +450,13 @@ def main():
                 exps.add(Explosion(bomb, 50))
                 score.value += 1
                 continue
+            bird.change_img(8, screen)
+            score.update(screen)
+            pg.display.update()
+            time.sleep(2)
+            return
+
+
         for bomb in pg.sprite.spritecollide(bird, bombs, False):
             if getattr(bomb, "state", "active") == "inactive":
                 bomb.kill()
@@ -476,6 +484,7 @@ def main():
         bombs.update()
         bombs.draw(screen)
         shields.draw(screen) 
+        shields.update()
         # 防御壁の更新と描画
         exps.update()
         exps.draw(screen)
